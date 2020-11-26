@@ -19,6 +19,17 @@ source("GraphGen/seminrvis.R")
 
 ```
 
+# TODO
+
+1. ~~~add adj r^2 in output (where?)~~~
+1. Currently arrow direction is not adjusted for when using refletive/formative models.
+1. auto-detect optimal sizes
+1.1 for ellipses as well
+1. change width of edges to values
+1. use bootstrapped models
+2. show estimation type (composite, reflective, A, B)
+3. CB Sem?
+
 
 # Setup a Model that works both in CB and PLS
 
@@ -145,16 +156,7 @@ pls_model %>% plot_model(theme = my_theme) %>% grViz()
 ```
 
 
-# TODO
 
-1. add adj r^2 in output (where?)
-1. Currently arrow direction is not adjusted for when using refletive/formative models.
-1. auto-detect optimal sizes
-1.1 for ellipses as well
-1. change width of edges to values
-1. use bootstrapped models
-2. show estimation type (composite, reflective, A, B)
-3. CB Sem?
 
 # Bootstrapped PLS
 
@@ -167,7 +169,7 @@ bs_model %>% summary()
 
 ## Bootstrapped HTMT
 
-```{r bootstrap_htmt, results='asis'}
+```{r bootstrap_htmt, results='asis', eval = FALSE}
 options(knitr.kable.NA = '')
 
 bs_model$HTMT_descriptives[1:6,7:12] %>% 
@@ -179,6 +181,18 @@ bs_model$HTMT_descriptives[1:6,7:12] %>%
 # CBSEM
 
 ```{r cbsem}
+
+measurements <- constructs(
+  reflective("Image",       multi_items("IMAG", 1:5)),
+  reflective("Expectation", multi_items("CUEX", 1:3)),
+  reflective("Loyalty",     multi_items("CUSL", 1:3)),
+  reflective("Complaints",  single_item("CUSCO"))
+)
+
+# Create four relationships (two regressions) in one line!
+structure <- relationships(
+  paths(from = c("Image", "Expectation"), to = c("Complaints", "Loyalty"))
+)
 # Put together reusable parts of your model to estimate CBSEM results
 cbsem_model <- estimate_cbsem(data = mobi, measurements, structure)
 
