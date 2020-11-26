@@ -92,12 +92,7 @@ Now we emulate a SMART-PLS plot (badly).
 
 ```{r pls_plot2}
 
-pls_model %>% plot_model(
-  # we can have a title
-  title = "PLS-SEM Plot with interactions",
-  
-  # we can style the item appearance
-  item_style = createItemStyle(
+my_theme <- create_theme(item_style = createItemStyle(
     fontsize = ifontsize, 
     width = iwidth, height = iheight, 
     color = "black", fill = "lightgoldenrodyellow"),
@@ -113,6 +108,14 @@ pls_model %>% plot_model(
   
   # we can style the inner weight edges
   inner_weight_style = createInnerWeightStyle(color = "black", fontsize = 12)
+  )
+
+pls_model %>% plot_model(
+  # we can have a title
+  title = "PLS-SEM Plot with interactions",
+  
+  # we can style the item appearance
+  theme = my_theme  
   ) %>% 
   grViz()
 ```
@@ -137,8 +140,8 @@ structure <- relationships(
 
 # Re-estimate the model using another estimation technique (Consistent PLS)
 pls_model <- estimate_pls(data = mobi, measurements, structure)
-
-pls_model %>% plot_model() %>% grViz()
+pls_model <- bootstrap_model(pls_model)
+pls_model %>% plot_model(theme = my_theme) %>% grViz()
 ```
 
 

@@ -4,9 +4,27 @@
 
 #class(model) consider tweaking according to class
 
+
+
+getFormattedNode <- function(construct, model, adjusted = FALSE, rounding = 3){
+
+  rs <- ""
+  if (construct %in% (model$rSquared %>% colnames() )) {
+    rs <- paste0(construct, " [label='", construct,
+                 "\nr²=", round(model$rSquared[1,construct],rounding),
+                 "']")
+  } else {
+    rs <- paste0(construct)
+  }
+  rs
+}
+
 # gets structural nodes description
-getSMnodes <- function(model) {
-  model$constructs %>% str_replace("\\*", "_x_") %>% paste0(collapse = "; ")
+getSMnodes <- function(model, adjusted = FALSE, rounding = 3) {
+  model$constructs %>%
+    str_replace("\\*", "_x_") %>%
+    sapply(., getFormattedNode, model, adjusted, rounding) %>%
+    paste0(collapse = "\n")
 }
 
 
@@ -163,16 +181,27 @@ createStyle <- function(shape = "box", color = "dimgray", fill = "white", fontsi
 
 
 
+create_theme <- function(item_style = createItemStyle(),
+                         construct_style = createConstructStyle(),
+                         outer_weight_style = createOuterWeightStyle(),
+                         inner_weight_style = createInnerWeightStyle()) {
+  list(item_style = item_style,
+       construct_style = construct_style,
+       outer_weight_style = outer_weight_style,
+       inner_weight_style = inner_weight_style)
+}
+
+
+
+
+# the plottting function ----
 
 
 plot_model <- function(model, use_outer_weights = FALSE,
                        title = "",
                        title_font = "helvetica",
                        title_size = 24,
-                       item_style = createItemStyle(),
-                       construct_style = createConstructStyle(),
-                       outer_weight_style = createOuterWeightStyle(),
-                       inner_weight_style = createInnerWeightStyle()
+                       theme = create_theme()
                        ){
 
   sm_nodes <- getSMnodes(model)
@@ -181,8 +210,10 @@ plot_model <- function(model, use_outer_weights = FALSE,
   mm_edges <- getMMedges(model, use_outer_weights = use_outer_weights)
 
 
-  # TODO
-  cat(model$rSquared)
+  # TODO Refactor style function to genearte list object
+  #      write function to convert list objects to dot-string
+  #      extract font sizes to update theme widths + heights
+  model$constructs %>% strwidth(.,font = 9, units = "in") %>% max()
 
 
   # use rank=same; A; B; C; to force same level on items of construct.
@@ -205,13 +236,13 @@ plot_model <- function(model, use_outer_weights = FALSE,
       subgraph sm {{
         rankdir = LR;
         node [
-          {construct_style}
+          {theme$construct_style}
         ]
         {sm_nodes}
 
         // How constructs are connected
         edge [
-        {inner_weight_style}
+        {theme$inner_weight_style}
         ]
         {sm_edges}
       }
@@ -221,13 +252,13 @@ plot_model <- function(model, use_outer_weights = FALSE,
       // ---------------------
       subgraph mm {{
         node [
-          {item_style}
+          {theme$item_style}
         ]
         {mm_nodes}
 
         // How items are connected with nodes
         edge [
-        {outer_weight_style}
+        {theme$outer_weight_style}
         ]
         {mm_edges}
       }
