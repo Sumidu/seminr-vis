@@ -16,6 +16,7 @@ getMMnodes <- function(model) {
     as_tibble() %>%
     filter(!str_detect(value, "\\*")) %>%
     pull(value) %>%
+    #str_replace("\\*", "_x_") %>%
     paste0(collapse = "; ")
 }
 
@@ -55,6 +56,7 @@ getMMedges <- function(model, weights = 1000, rounding = 3, use_outer_weights = 
 
  # use_outer_weights <- FALSE
   for (i in 1:nrow(mm)) {
+    # i <- 1
     if (use_outer_weights) {
       loading = round(model$outer_weights[mm[i,2], mm[i, 1]], rounding)
     } else {
@@ -180,7 +182,7 @@ plot_model <- function(model, use_outer_weights = FALSE,
 
 
   # TODO
-  model$rSquared
+  cat(model$rSquared)
 
 
   # use rank=same; A; B; C; to force same level on items of construct.
@@ -232,3 +234,9 @@ plot_model <- function(model, use_outer_weights = FALSE,
   }"
   )
 }
+
+
+
+
+
+

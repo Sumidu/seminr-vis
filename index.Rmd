@@ -118,6 +118,30 @@ pls_model %>% plot_model(
 ```
 
 
+# Small Model from the seminr Website
+
+```{r small_model}
+# Define measurements with famliar terms: reflective, multi-item constructs, etc.
+measurements <- constructs(
+  composite("Image",       multi_items("IMAG", 1:5)),
+  composite("Expectation", multi_items("CUEX", 1:3)),
+  composite("Loyalty",     multi_items("CUSL", 1:3)),
+  composite("Complaints",  single_item("CUSCO"))
+)
+
+# Create four relationships (two regressions) in one line!
+structure <- relationships(
+  paths(from = c("Image", "Expectation"), to = c("Complaints", "Loyalty"))
+)
+
+
+# Re-estimate the model using another estimation technique (Consistent PLS)
+pls_model <- estimate_pls(data = mobi, measurements, structure)
+
+pls_model %>% plot_model() %>% grViz()
+```
+
+
 # TODO
 
 1. add adj r^2 in output (where?)
@@ -156,5 +180,50 @@ bs_model$HTMT_descriptives[1:6,7:12] %>%
 cbsem_model <- estimate_cbsem(data = mobi, measurements, structure)
 
 cbsem_model %>% summary()
+```
+
+
+
+
+```{r simple model}
+
+# Define measurements with famliar terms: reflective, multi-item constructs, etc.
+measurements <- constructs(
+  reflective("Image",       multi_items("IMAG", 1:5)),
+  reflective("Expectation", multi_items("CUEX", 1:3)),
+  reflective("Loyalty",     multi_items("CUSL", 1:3)),
+  reflective("Complaints",  single_item("CUSCO"))
+)
+
+# Create four relationships (two regressions) in one line!
+structure <- relationships(
+  paths(from = c("Image", "Expectation"), to = c("Complaints", "Loyalty"))
+
+)
+
+
+pls_model <- estimate_pls(mobi, measurements, structure)
+
+
+pls_model$outer_loadings
+pls_model$outer_weights
+
+pls_model$path_coef
+
+
+
+pls_model$data %>% 
+  dplyr::select(pls_model$mmVariables) %>% 
+  as.matrix() -> mdata
+
+((mdata - pls_model$meanData ) / pls_model$sdData) %>% head(1) %*% pls_model$outer_weights
+
+pls_model$path_coef
+
+
+pls_model$construct_scores[1,]
+
+pls_model %>% plot_model() %>% grViz()
+
 ```
 
